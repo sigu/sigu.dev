@@ -1,0 +1,4 @@
+#+TITLE: Blog Index
+
+- [[file:post_one.org][Post One]]
+- [[file:sitemap.org][Sitemap for project posts]]

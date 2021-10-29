@@ -1,0 +1,77 @@
+#+TITLE: With clauses in Elixir
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../../../css/style.css" />
+
+#+OPTIONS: toc:nil        (no default TOC at all)
+#+OPTIONS: num:nil
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto html-preamble:t
+#+OPTIONS: html-scripts:t html-style:t html5-fancy:nil tex:t
+#+OPTIONS: creator:nil
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+
+** How it works
+   Have a look at the with clause shown below, it has two matches that must pass
+   1. ~func_ok()~ must return ~:ok~
+   2. ~func_error()~ must return ~:error~
+
+   It will then invoke the ~do~ ~end~ block that is  ~IO.puts "printed"~ only if the two conditions above are met
+   #+begin_src elixir
+     with :ok <- func_ok(), :error <- func_error() do
+       IO.puts "printed"
+     end
+   #+end_src
+
+   This is useful when for example you want to ensure the following conditions are met
+   1. user is logged in
+   2. the promo code entered is still valid
+   3. the user is not blacklisted
+   4. the item you are applying the promo code to can accept the discounts
+
+  #+begin_src elixir
+    with :ok <- login_user(),
+         :valid <- check_promo_code(),
+           :ok <- user_not_blacklisted(),
+           :ok <- item_on_promo() do
+      apply_promo_code()
+    end
+   #+end_src
+
+
+  A cool thing, you can assign variables too
+   #+Begin_src elixir
+     with :ok <- :ok, :error <- :error, ans = 3 + 4 do
+       IO.puts ans
+     end
+   #+end_src
+
+
+
+** It stops checking immediately a check fails
+   If in the process of executing the functions, one of then does not return the expected result, then the unmatching result is returned. For example,
+
+   If ~func_ok()~ below returned ~{:error, :unauthorised}~ then the ~func_error()~ will not be executed and the return value of the with clause will be
+   ~{:error, :unauthorised}~
+   #+begin_src elixir
+     with :ok <- func_ok(), :error <- func_error() do
+       IO.puts "printed"
+     end
+   #+end_src
+
+** you can match failing clauses
+    if you do not want to return the failing return value then you can pattern match on the return value and have a custom return. This introduces the else block
+   #+begin_src elixir
+     with :ok <- func_ok(), :error <- func_error() do
+       IO.puts "printed"
+       else
+         {:error, :unauthorised} -> "Custom return value"
+     end
+   #+end_src
+
+   This time round if the ~func_ok()~ returns ~{:error, :unauthorised}~ it will be pattern matched on the else block.
+
+   What do you think will happen if ~func_error()~ returns ~:ok~? It will actually blow up, why? Its because  you have to match all the possible return values of all the expressions in the with block.
+   So how can you make it work as expected? Add a second pattern on the else block 😄
+
+* Resources
+  - https://hexdocs.pm/elixir/Kernel.SpecialForms.html#with/1
+  - https://elixir-lang.org/getting-started/mix-otp/docs-tests-and-with.html#with

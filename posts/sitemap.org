@@ -1,0 +1,4 @@
+#+TITLE: Sitemap for project posts
+
+- [[file:post_one.org][Post One]]
+- [[file:index.org][Post One]]
